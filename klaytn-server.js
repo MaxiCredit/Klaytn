@@ -10,14 +10,14 @@ var acceptOffer = require('./accept-offer');
 var acceptClaim = require('./accept-claim');
 
 const server = http.createServer((req, res) => {
-	var q = url.parse(req.url, true);
+  var q = url.parse(req.url, true);
   var filename = '.' + q.pathname;
-	//var objectname = q.pathname.slice(1);
+  //var objectname = q.pathname.slice(1);
   var queryStringObject = q.query;
-	var extension = filename.slice(filename.lastIndexOf(".") + 1);
-	var content = "";
+  var extension = filename.slice(filename.lastIndexOf(".") + 1);
+  var content = "";
 
-	switch (extension) {
+  switch (extension) {
     case "html":
       content = "text/html";
       break;
@@ -53,24 +53,24 @@ const server = http.createServer((req, res) => {
       break;
   }
 
-	if(req.method === 'POST') {
-		switch (filename) {
-			case "./register" : 
-				register.registerNewUser(req, res);
-				break;
-			case './create-credit-offer':
-				offer.newOffer(req, res);
-				break;
-			case './create-credit-claim':
-				claim.newClaim(req, res);
-				break;
-			case './accept-offer':
-				acceptOffer.acceptCreditOffer(req, res);
-				break;
-			case './accept-claim':
-				acceptClaim.acceptCreditClaim(req, res);
-				break;
-		}
+  if(req.method === 'POST') {
+	switch (filename) {
+		case "./register" : 
+			register.registerNewUser(req, res);
+			break;
+		case './create-credit-offer':
+			offer.newOffer(req, res);
+			break;
+		case './create-credit-claim':
+			claim.newClaim(req, res);
+			break;
+		case './accept-offer':
+			acceptOffer.acceptCreditOffer(req, res);
+			break;
+		case './accept-claim':
+			acceptClaim.acceptCreditClaim(req, res);
+			break;
+	}
     } else {
         fs.readFile(filename, function(err, data) {
     		if(err) {
@@ -81,7 +81,7 @@ const server = http.createServer((req, res) => {
 			  res.write(data);
 			  res.end();
     		}
-  		});
+  	});
     }
 });
 server.listen(3000);
