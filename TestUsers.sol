@@ -178,6 +178,14 @@ contract TestUsers {
     function decreaseCreditScore(uint _borrowerId, uint _ratio, uint _creditId) public onlyCreditContract(_creditId) {
         uint minus = _ratio * 2;
         users[_borrowerId].creditScore -= minus; 
+        //Credit score should not be negative
+        /*
+        if(minus < users[_borrowerId].creditScore) {
+            users[_borrowerId].creditScore -= minus;
+        } else {
+            users[_borrowerId].creditScore = 0;
+        }
+        */
     }
     
     function calculateScoreIncrease(uint _interest) public pure returns(uint) {
