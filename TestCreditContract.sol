@@ -78,6 +78,7 @@ contract TestCreditContract {
         _;
     }
     
+    //@@TODO events
     function latePayment() public onlyServer {
         uint latePeriodLength = 300; //It will be 10 days (864000s)
         uint creditScoreDropTime = 1200; //it will be 90 days (7776000s)
@@ -93,6 +94,7 @@ contract TestCreditContract {
         }
     }
     
+    //@@TODO events
     function setToRedeemed(uint _changeCapital) public onlyServer {
         lastReedem ++;
         paidBack[lastReedem] = true;
