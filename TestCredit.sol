@@ -144,7 +144,7 @@ contract TestCredit {
     
     function changeCreditClaimAmount(uint _claimId, uint _amount) public onlyOwnerOfClaim(_claimId) {
         creditClaims[_claimId].loanAmount -= _amount; 
-        sti.transfer(msg.sender, _amount);
+        //sti.transfer(msg.sender, _amount);
     }
     
     function deleteOffer(uint _offerId) public onlyOwnerOfOffer(_offerId){
@@ -155,7 +155,7 @@ contract TestCredit {
     
     function deleteClaim(uint _claimId) public onlyOwnerOfClaim(_claimId){
        creditClaims[_claimId].claimLastTo = 0;
-       sti.transfer(msg.sender, creditClaims[_claimId].loanAmount);
+       //sti.transfer(msg.sender, creditClaims[_claimId].loanAmount);
        creditClaims[_claimId].loanAmount = 0;
     }
 
