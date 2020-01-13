@@ -1,7 +1,7 @@
 pragma solidity >=0.4.25;
 import "./AddressUtils.sol";
 
-//Last updated by Zol, 2019.10.29
+//Last updated by Zol, 2020.01.13
 contract ERC20Interface {
     function allowance(address _from, address _to) public view returns(uint);
     function transferFrom(address _from, address _to, uint _sum) public;
@@ -22,6 +22,8 @@ contract MXKlayTest {
     
     using AddressUtils for address;
     uint public initSupply;
+    address public spotMarketAddress;
+    address public depositAddress;
     uint supply;
     uint decimals;
     mapping(address => uint) public balanceOf;
@@ -75,7 +77,7 @@ contract MXKlayTest {
     ToTransfer[] toTransfers;
     uint public toTransferCounter = 0;
     
-    constructor (address _operator, uint _initSupply, string memory _name, string memory _symbol, address _serverAddress, uint _initPriceUSD, uint _initPriceKlay) public {
+    constructor (address _operator, uint _initSupply, string memory _name, string memory _symbol, address _serverAddress, address _spotMarket, address _deposit, uint _initPriceUSD, uint _initPriceKlay) public {
         operatorOfContract = _operator;        
         balanceOf[address(this)] = _initSupply;
         initSupply = _initSupply;
@@ -84,6 +86,8 @@ contract MXKlayTest {
         symbol = _symbol;
         serverAddressArrayLength = serverAddress.push(_serverAddress);
         isOurServer[_serverAddress] = true;
+        spotMarketAddress = _spotMarket;
+        depositAddress = _deposit;
         priceUSD = _initPriceUSD;
         priceKlay = _initPriceKlay * 1000000000; //Input in ston, stored in peb
         KlayUSDprice = priceKlay / priceUSD;
@@ -101,6 +105,12 @@ contract MXKlayTest {
         uint supplyIncrease = uint(_txAmount * 2 / 100);
         supply += supplyIncrease;
         balanceOf[address(this)] += supplyIncrease;
+        //Don't add to contract's balance, but half of them to deposit, half of them to spot market
+        //uint supplyIncreaseHalf = uint(_txAmount / 100);
+        //balanceOf[address(spotMarketAddress)] += supplyIncrease;
+        //balanceOf[address(depositAddress)] += supplyIncrease;
+        //uint supplyIncrease = supplyIncreaseHalf * 2;
+        //supply += supplyIncrease;
     }
     
     function mintAtUpperBound(uint _txAmount) private {
@@ -112,22 +122,24 @@ contract MXKlayTest {
         balanceOf[address(this)] += _txAmount;
     }
     /*
-    function mintByCredit(uint _loanAmount, uint _interestRate) private {
-        if(_interestRate <= 100) {
-            uint supplyIncrease = uint(_loanAmount * _interestRate / 100);
-        } else {
-           uint supplyIncrease = uint(_loanAmount); 
+    address public futuresContractAddress; Should define at constructor
+    ERC20Interface futureCon = ERC20Interface(futuresContractAddress); This should have probably custom interface
+    function issueOptionByCredit(uint _loanAmount, uint _interestRate) private {
+        if(_interestRate > 2) {
+            uint optionIncrease = uint((_loanAmount * (_interestRate - 2)) / 100);
+            futureCon.supply += optionIncrease; ??? use function like futureCon.increase(optionIncrease)
+            futureCon.optionBalance[address(futuresContractAddress)] += optionIncrease; ???
         }
-        uint supplyIncrease = uint(_loanAmount * _interestRate / 100); //SHOULD limit and use mintByRedeem
-        supply += supplyIncrease;
-        balanceOf[this] += supplyIncrease;
     } */
-    
+
+    //MXoptions and MXfutures can be changed to MX from futuresAddress's balance
+    //address public futuresAddress; should define in constructor
     function mintByRedeem(uint _loanAmount, uint _interestRate) private {
         if(_interestRate > 2) {
             uint supplyIncrease = uint((_loanAmount * (_interestRate - 2)) / 100);
             supply += supplyIncrease;
             balanceOf[address(this)] += supplyIncrease;  
+            //balanceOf[address(futuresAddress)] += supplyIncrease;
         }
     }
     
@@ -206,7 +218,7 @@ contract MXKlayTest {
     
     function outerTransfer(uint _orderId) public {
         require(orderPaid[_orderId] == true);
-        _transfer(address(this), msg.sender, orderAmountById[_orderId]);
+        _transfer(address(this), orderById[_orderId], orderAmountById[_orderId]);
     }
     //----------
     
@@ -297,10 +309,6 @@ contract MXKlayTest {
         mintByRedeem(_sum, _interestRate); 
     }
     
-    function transferFromContract(address _to, uint _sum) public operator {
-        _transfer(address(this), _to, _sum);
-    }
-    
     //_priceKlay in ston
     function setPrice(uint _priceUSD, uint _priceKlay) public onlyServer() {
        priceUSD = _priceUSD;
@@ -332,5 +340,9 @@ contract MXKlayTest {
         if(_priceUSD >= dailyUpperBound || USDpriceFromKlay >= dailyUpperBound) {
             mintAtUpperBound(_txAmount);
         }
+    }
+    
+    function transferFromContract(address _addr, uint _amount) public operator() {
+        _transfer(address(this), _addr, _amount);
     }
 }
