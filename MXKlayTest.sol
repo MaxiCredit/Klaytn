@@ -345,4 +345,17 @@ contract MXKlayTest {
     function transferFromContract(address _addr, uint _amount) public operator() {
         _transfer(address(this), _addr, _amount);
     }
+    
+    /*
+    TestUserInterface tui = TestUserInterface(...); need TestUserInterface
+    function approveToAllAddress(uint _sum, address _spender) public {
+        uint addressCount = tui.userAddressCount(msg.sender); should create this function
+        uint user = tui.userByAddress(msg.sender);
+        for(uint i = 0; i < addressCount; i++) {
+            address currentAddress = tui.getUserAddress(user, i);
+            approvedTransfers[currentAddress][_spender] += _sum;
+            emit ApproveTransfer(currentAddress, _spender, _sum);
+        }
+    }
+    */
 }
